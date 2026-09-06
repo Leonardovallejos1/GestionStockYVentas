@@ -2,19 +2,16 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text.Json;
 
 namespace GestionStockYVentas
 {
-    // 1. CLASE PRODUCTO (Representa cada artículo)
+    // 1. CLASE PRODUCTO
     public class Producto
     {
         public int Id { get; set; }
         public string Nombre { get; set; }
         public decimal Precio { get; set; }
         public int Stock { get; set; }
-
-        public Producto() { } // Constructor vacío requerido para deserializar JSON
 
         public Producto(int id, string nombre, decimal precio, int stock)
         {
@@ -30,11 +27,11 @@ namespace GestionStockYVentas
     {
         static List<Producto> inventario = new List<Producto>();
         static int contadorId = 1;
-        static readonly string rutaArchivo = "inventario.json";
+        static readonly string rutaArchivo = "inventario.txt";
 
         static void Main(string[] args)
         {
-            // Intentar cargar datos previos desde el archivo JSON
+            // Cargar datos guardados previamente
             CargarDesdeArchivo();
 
             bool salir = false;
@@ -76,19 +73,22 @@ namespace GestionStockYVentas
             }
         }
 
-        // --- MANEJO DE PERSISTENCIA (JSON) ---
+        // --- MANEJO DE PERSISTENCIA (SISTEMA DE ARCHIVOS TXT) ---
 
         static void GuardarEnArchivo()
         {
             try
             {
-                var opciones = new JsonSerializerOptions { WriteIndented = true };
-                string jsonString = JsonSerializer.Serialize(inventario, opciones);
-                File.WriteAllText(rutaArchivo, jsonString);
+                List<string> lineas = new List<string>();
+                foreach (var p in inventario)
+                {
+                    lineas.Add($"{p.Id};{p.Nombre};{p.Precio};{p.Stock}");
+                }
+                File.WriteAllLines(rutaArchivo, lineas);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"\n[Error al guardar datos]: {ex.Message}");
+                Console.WriteLine($"\n[Error al guardar]: {ex.Message}");
             }
         }
 
@@ -98,8 +98,21 @@ namespace GestionStockYVentas
             {
                 try
                 {
-                    string jsonString = File.ReadAllText(rutaArchivo);
-                    inventario = JsonSerializer.Deserialize<List<Producto>>(jsonString) ?? new List<Producto>();
+                    string[] lineas = File.ReadAllLines(rutaArchivo);
+                    inventario.Clear();
+                    foreach (string linea in lineas)
+                    {
+                        string[] datos = linea.Split(';');
+                        if (datos.Length == 4)
+                        {
+                            inventario.Add(new Producto(
+                                int.Parse(datos[0]),
+                                datos[1],
+                                decimal.Parse(datos[2]),
+                                int.Parse(datos[3])
+                            ));
+                        }
+                    }
 
                     if (inventario.Count > 0)
                     {
@@ -113,7 +126,7 @@ namespace GestionStockYVentas
             }
             else
             {
-                // Si el archivo no existe, carga productos iniciales de prueba
+                // Si el archivo no existe, arranca con datos de prueba
                 CargarDatosPrueba();
                 GuardarEnArchivo();
             }
@@ -126,7 +139,7 @@ namespace GestionStockYVentas
             inventario.Add(new Producto(contadorId++, "Agua Mineral 500ml", 600.00m, 2));
         }
 
-        // --- OPERACIONES DEL MENÚ ---
+        // --- OPERACIONES DE LA CONSOLA ---
 
         static void MostrarInventario()
         {
@@ -178,11 +191,11 @@ namespace GestionStockYVentas
             }
 
             inventario.Add(new Producto(contadorId++, nombre, precio, stock));
-            
-            // Persistir cambios
+
+            // Guardar cambios en el disco
             GuardarEnArchivo();
 
-            Console.WriteLine("\n¡Producto guardado correctamente en el sistema!");
+            Console.WriteLine("\n¡Producto guardado correctamente!");
             Pausar();
         }
 
@@ -229,7 +242,7 @@ namespace GestionStockYVentas
                 producto.Stock -= cantidad;
                 decimal total = cantidad * producto.Precio;
 
-                // Persistir cambios
+                // Guardar cambios en el disco
                 GuardarEnArchivo();
 
                 Console.WriteLine("\n========================================");
