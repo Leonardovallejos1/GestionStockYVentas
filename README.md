@@ -1,13 +1,13 @@
-# Sistema de Control de Stock y Ventas en C#
+# Sistema de Control de Stock y Ventas (WPF)
 
-Proyecto de consola desarrollado en C# que simula la gestión de inventario y ventas para un comercio.
+Aplicación de escritorio desarrollada en C# y WPF (Windows Presentation Foundation) para la gestión de inventario y registro de ventas en tiempo real.
 
-## Funcionalidades
-- Listado de productos y control de stock en tiempo real.
-- Registro de ventas con descuento automático de unidades.
-- Validaciones para no vender productos sin stock disponible.
-- Persistencia de Datos: Guardado y lectura automática del inventario en un archivo local (inventario.txt) para mantener la información al reiniciar la aplicación.
+## 🚀 Funcionalidades
+- **Interfaz Gráfica (GUI):** Formulario de alta y tabla interactiva (`DataGrid`).
+- **Gestión de Stock:** Venta directa con descuento automático de unidades y eliminación de productos.
+- **Persistencia Local:** Lectura y escritura automática en archivo plano (`inventario.txt`).
 
-## Tecnologías
-- C# (.NET)
-- Programación Orientada a Objetos (POO)
+## 🛠️ Tecnologías utilizadas
+- C# / .NET
+- WPF (XAML)
+- LINQ
