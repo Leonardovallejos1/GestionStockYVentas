@@ -1,6 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text.Json;
 
 namespace GestionStockYVentas
 {
@@ -11,6 +13,8 @@ namespace GestionStockYVentas
         public string Nombre { get; set; }
         public decimal Precio { get; set; }
         public int Stock { get; set; }
+
+        public Producto() { } // Constructor vacío requerido para deserializar JSON
 
         public Producto(int id, string nombre, decimal precio, int stock)
         {
@@ -26,11 +30,12 @@ namespace GestionStockYVentas
     {
         static List<Producto> inventario = new List<Producto>();
         static int contadorId = 1;
+        static readonly string rutaArchivo = "inventario.json";
 
         static void Main(string[] args)
         {
-            // Cargar datos iniciales para probar de entrada
-            CargarDatosPrueba();
+            // Intentar cargar datos previos desde el archivo JSON
+            CargarDesdeArchivo();
 
             bool salir = false;
             while (!salir)
@@ -71,7 +76,49 @@ namespace GestionStockYVentas
             }
         }
 
-        // Carga de productos iniciales para no arrancar de cero
+        // --- MANEJO DE PERSISTENCIA (JSON) ---
+
+        static void GuardarEnArchivo()
+        {
+            try
+            {
+                var opciones = new JsonSerializerOptions { WriteIndented = true };
+                string jsonString = JsonSerializer.Serialize(inventario, opciones);
+                File.WriteAllText(rutaArchivo, jsonString);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"\n[Error al guardar datos]: {ex.Message}");
+            }
+        }
+
+        static void CargarDesdeArchivo()
+        {
+            if (File.Exists(rutaArchivo))
+            {
+                try
+                {
+                    string jsonString = File.ReadAllText(rutaArchivo);
+                    inventario = JsonSerializer.Deserialize<List<Producto>>(jsonString) ?? new List<Producto>();
+
+                    if (inventario.Count > 0)
+                    {
+                        contadorId = inventario.Max(p => p.Id) + 1;
+                    }
+                }
+                catch (Exception)
+                {
+                    inventario = new List<Producto>();
+                }
+            }
+            else
+            {
+                // Si el archivo no existe, carga productos iniciales de prueba
+                CargarDatosPrueba();
+                GuardarEnArchivo();
+            }
+        }
+
         static void CargarDatosPrueba()
         {
             inventario.Add(new Producto(contadorId++, "Coca Cola 1.5L", 1500.00m, 10));
@@ -79,7 +126,8 @@ namespace GestionStockYVentas
             inventario.Add(new Producto(contadorId++, "Agua Mineral 500ml", 600.00m, 2));
         }
 
-        // Opción 1: Mostrar Inventario
+        // --- OPERACIONES DEL MENÚ ---
+
         static void MostrarInventario()
         {
             Console.Clear();
@@ -96,7 +144,6 @@ namespace GestionStockYVentas
 
                 foreach (var prod in inventario)
                 {
-                    // Alerta visual de poco stock
                     string estadoStock = prod.Stock <= 2 ? $"{prod.Stock} (¡ALERTA!)" : prod.Stock.ToString();
                     Console.WriteLine($"{prod.Id,-5} | {prod.Nombre,-20} | ${prod.Precio,-9:F2} | {estadoStock,-8}");
                 }
@@ -106,7 +153,6 @@ namespace GestionStockYVentas
             Console.ReadKey();
         }
 
-        // Opción 2: Agregar Producto
         static void AgregarProducto()
         {
             Console.Clear();
@@ -132,11 +178,14 @@ namespace GestionStockYVentas
             }
 
             inventario.Add(new Producto(contadorId++, nombre, precio, stock));
-            Console.WriteLine("\n¡Producto guardado correctamente!");
+            
+            // Persistir cambios
+            GuardarEnArchivo();
+
+            Console.WriteLine("\n¡Producto guardado correctamente en el sistema!");
             Pausar();
         }
 
-        // Opción 3: Vender Producto (Descuenta Stock y calcula Total)
         static void VenderProducto()
         {
             Console.Clear();
@@ -171,16 +220,17 @@ namespace GestionStockYVentas
                 return;
             }
 
-            // VALIDACIÓN DE NEGOCIO: Verificar stock suficiente
             if (cantidad > producto.Stock)
             {
                 Console.WriteLine($"\n¡ERROR DE VENTA! No hay suficiente stock. Solamente quedan {producto.Stock} unidades.");
             }
             else
             {
-                // Descuento automático de stock
                 producto.Stock -= cantidad;
                 decimal total = cantidad * producto.Precio;
+
+                // Persistir cambios
+                GuardarEnArchivo();
 
                 Console.WriteLine("\n========================================");
                 Console.WriteLine("           VENTA EXITOSA");
