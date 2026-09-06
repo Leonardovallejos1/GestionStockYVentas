@@ -1,0 +1,7 @@
+C:\Users\Acer\source\repos\GestionStockYVentas\GestionStockYVentas\bin\Debug\GestionStockYVentas.exe.config
+C:\Users\Acer\source\repos\GestionStockYVentas\GestionStockYVentas\bin\Debug\GestionStockYVentas.exe
+C:\Users\Acer\source\repos\GestionStockYVentas\GestionStockYVentas\bin\Debug\GestionStockYVentas.pdb
+C:\Users\Acer\source\repos\GestionStockYVentas\GestionStockYVentas\obj\Debug\GestionStockYVentas.csproj.AssemblyReference.cache
+C:\Users\Acer\source\repos\GestionStockYVentas\GestionStockYVentas\obj\Debug\GestionStockYVentas.csproj.CoreCompileInputs.cache
+C:\Users\Acer\source\repos\GestionStockYVentas\GestionStockYVentas\obj\Debug\GestionStockYVentas.exe
+C:\Users\Acer\source\repos\GestionStockYVentas\GestionStockYVentas\obj\Debug\GestionStockYVentas.pdb
